@@ -42,7 +42,7 @@ No modules.
 | <a name="input_first_name"></a> [first\_name](#input\_first\_name) | First name of the user. | `string` | `null` | no |
 | <a name="input_functional_roles"></a> [functional\_roles](#input\_functional\_roles) | Roles that the user will be granted access to. | `set(string)` | `[]` | no |
 | <a name="input_last_name"></a> [last\_name](#input\_last\_name) | Last name of the user. | `string` | `null` | no |
-| <a name="input_login_name"></a> [login\_name](#input\_login\_name) | login\_name | `string` | `null` | no |
+| <a name="input_login_name"></a> [login\_name](#input\_login\_name) | The name users use to log in. If not supplied, snowflake will use name instead. | `string` | `null` | no |
 | <a name="input_must_change_password"></a> [must\_change\_password](#input\_must\_change\_password) | Specifies whether the user is forced to change their password on next login (including their first/initial login) into the system. | `bool` | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the user. Note that if you do not supply login\_name this will be used as login\_name. | `string` | n/a | yes |
 | <a name="input_password"></a> [password](#input\_password) | WARNING: this will put the password in the terraform state file. Use carefully. | `string` | `null` | no |

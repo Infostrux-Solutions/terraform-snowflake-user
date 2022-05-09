@@ -5,7 +5,7 @@ variable "name" {
 
 variable "login_name" {
   type        = string
-  description = "login_name"
+  description = "The name users use to log in. If not supplied, snowflake will use name instead."
   default     = null
 }
 variable "comment" {
