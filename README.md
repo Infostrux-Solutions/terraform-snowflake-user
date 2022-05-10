@@ -71,7 +71,3 @@ No modules.
 ## Authors
 
 Module is maintained by [Charles-Etienne Couture](https://github.com/charlesInfostrux) with help from [Infostrux](https://github.com/orgs/Infostrux-Solutions/people).
-
-## License
-
-Apache 2 Licensed. See [LICENSE](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/LICENSE) for full details.
