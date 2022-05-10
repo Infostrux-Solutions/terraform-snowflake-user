@@ -70,7 +70,7 @@ No modules.
 
 ## Authors
 
-Module is maintained by [Anton Babenko](https://github.com/antonbabenko) with help from [these awesome contributors](https://github.com/terraform-aws-modules/terraform-aws-vpc/graphs/contributors).
+Module is maintained by [Charles-Etienne Couture](https://github.com/charlesInfostrux) with help from [Infostrux](https://github.com/orgs/Infostrux-Solutions/people).
 
 ## License
 
