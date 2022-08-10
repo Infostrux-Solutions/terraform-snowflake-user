@@ -70,7 +70,7 @@ No modules.
 
 ## Authors
 
-Module is maintained by [Infostrux Solutions](opensource@infostrux.com).
+Module is maintained by [Infostrux Solutions](mailto:opensource@infostrux.com)
 
 ## License
 
