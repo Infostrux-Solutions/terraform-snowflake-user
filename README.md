@@ -9,13 +9,13 @@ Terraform module which creates user resources on Snowflake.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.1 |
-| <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | >=0.31.0 |
+| <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | >=0.40.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_snowflake"></a> [snowflake](#provider\_snowflake) | 0.31.0 |
+| <a name="provider_snowflake"></a> [snowflake](#provider\_snowflake) | 0.40.0 |
 
 ## Modules
 
@@ -25,8 +25,8 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [snowflake_role_grants.grants](https://registry.terraform.io/providers/chanzuckerberg/snowflake/latest/docs/resources/role_grants) | resource |
-| [snowflake_user.user](https://registry.terraform.io/providers/chanzuckerberg/snowflake/latest/docs/resources/user) | resource |
+| [snowflake_role_grants.grants](https://registry.terraform.io/providers/Snowflake-Labs/snowflake/latest/docs/resources/role_grants) | resource |
+| [snowflake_user.user](https://registry.terraform.io/providers/Snowflake-Labs/snowflake/latest/docs/resources/user) | resource |
 
 ## Inputs
 
@@ -70,4 +70,9 @@ No modules.
 
 ## Authors
 
-Module is maintained by [Charles-Etienne Couture](https://github.com/charlesInfostrux) with help from [Infostrux](https://github.com/orgs/Infostrux-Solutions/people).
+Module is maintained by [Infostrux Solutions](mailto:opensource@infostrux.com)
+
+## License
+
+Apache 2 Licensed. See [LICENSE](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/LICENSE) for full details.
+
