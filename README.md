@@ -1,40 +1,129 @@
 # Snowflake User Terraform Module
 
-Manage Snowflake users using Terraform.
+Manage Snowflake users using a simple configuration model.
 
-This module exposes all of the available configuration for a Snowflake user and passes them to the Snowflake provider resource. You can also supply functional roles to assign to the user during creation.
-
-The resulting deployment will create Snowflake users (and optionally assign grants to them).
+This module deploys Snowflake users to an account based on a YAML configuration file. Each user is created using a randomly generated password that must be reset on first login.
 
 ## Usage
 
 ```hcl
-module "user" {
+module "users" {
   source  = "Infostrux-Solutions/user/snowflake"
-  version = "0.3.0"
+  version = "1.0.0"
+
   providers = {
     snowflake = snowflake.useradmin
   }
 
-  depends_on = [snowflake_warehouse.warehouses]
-
-  name                 = Alice
-  login_name           = Alice
-  display_name         = Alice
-  first_name           = Alice
-  last_name            = Smith
-  comment              = "A Data Engineer at Awesome Company"
-  default_role         = "SYSADMIN"
-  default_namespace    = "database_name.schema_name"
-  default_warehouse    = snowflake_warehouse.small.name
-  disabled             = false
-  email                = alice@awesomecompany.com
-  must_change_password = true
-  functional_roles = [
-    "ACCOUNTADMIN",
-    "SYSADMIN",
+  depends_on = [
+    snowflake_database.databases,
+    snowflake_role.roles,
+    snowflake_warehouse.warehouses,
   ]
+
+  spec_file_path = "spec.yml"
 }
+
+output "users_password" {
+  description = "The randomly generated password for each Snowflake user."
+  sensitive   = true
+  value       = module.users.users_password
+}
+```
+
+Once applied, the password can be obtained by viewing the Terraform output explicitly:
+
+```shell
+terraform output -json
+```
+
+**Example Output**
+
+```shell
+{
+  "users_password": {
+    "sensitive": true,
+    "type": "string",
+    "value": "xxxxxxxxxxxxxxxx"  <-- This will be the generated password value.
+  }
+}
+```
+
+### Snowflake Role
+
+Snowflake recommends using the **USERADMIN** system role to create and manage users. Though not required, this module should be configured with a provider alias that uses **USERADMIN** to deploy the users.
+
+The following is an example of a working `providers.tf` file which specifies a user-configurable role (default) and the **USERADMIN** aliased role:
+
+```hcl
+terraform {
+  required_version = ">= 1.0.0"
+
+  required_providers {
+    snowflake = {
+      source  = "Snowflake-Labs/snowflake"
+      version = "0.46.0"
+    }
+  }
+}
+
+provider "snowflake" {
+  account                = var.snowflake_account
+  username               = var.snowflake_username
+  private_key_path       = var.snowflake_private_key_path
+  private_key_passphrase = var.snowflake_private_key_passphrase
+  role                   = var.snowflake_role
+}
+
+provider "snowflake" {
+  alias                  = "useradmin"
+  account                = var.snowflake_account
+  username               = var.snowflake_username
+  private_key_path       = var.snowflake_private_key_path
+  private_key_passphrase = var.snowflake_private_key_passphrase
+  role                   = "USERADMIN"
+}
+```
+
+Then when specifying the module, the useradmin provider alias can be used as the `snowflake` provider:
+
+```hcl
+module "users" {
+  ...
+  providers = {
+    snowflake = snowflake.useradmin
+  }
+  ...
+}
+```
+
+### Configuring Resources
+
+The YAML specification file defines users and their attributes.
+
+All of the keys defined in the configuration specification are optional, except for `name`.
+
+#### spec.yml
+
+A User specification file has the following structure:
+
+```yaml
+users:
+  user_name:
+    name: user_name
+    comment: user_comment
+    default_namespace: namespace
+    default_role: role_name
+    default_warehouse: warehouse_name
+    disabled: true/false
+    display_name: user_display_name
+    email: user_email
+    first_name: user_first_name
+    last_name: user_last_name
+    login_name: user_login_name
+    rsa_public_key: user_rsa_public_key
+    rsa_public_key_2: user_rsa_public_key_2
+  ... ... ...
 ```
 
 <!-- BEGIN_TF_DOCS -->
