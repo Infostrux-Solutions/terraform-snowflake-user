@@ -132,12 +132,14 @@ users:
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | >=3.4.3 |
 | <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | >=0.46.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
+| <a name="provider_random"></a> [random](#provider\_random) | >=3.4.3 |
 | <a name="provider_snowflake"></a> [snowflake](#provider\_snowflake) | >=0.46.0 |
 
 ## Modules
@@ -148,6 +150,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [random_password.password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [snowflake_user.users](https://registry.terraform.io/providers/Snowflake-Labs/snowflake/latest/docs/resources/user) | resource |
 
 ## Inputs
@@ -158,7 +161,9 @@ No modules.
 
 ## Outputs
 
-No outputs.
+| Name | Description |
+|------|-------------|
+| <a name="output_users_password"></a> [users\_password](#output\_users\_password) | The randomly generated password for each Snowflake user. |
 <!-- END_TF_DOCS -->
 
 ## Authors
