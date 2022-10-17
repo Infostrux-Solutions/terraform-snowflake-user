@@ -1,9 +1,43 @@
 # Snowflake User Terraform Module
 
-Terraform module which creates user resources on Snowflake.
+Manage Snowflake users using Terraform.
 
-## Examples
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+This module exposes all of the available configuration for a Snowflake user and passes them to the Snowflake provider resource. You can also supply functional roles to assign to the user during creation.
+
+The resulting deployment will create Snowflake users (and optionally assign grants to them).
+
+## Usage
+
+```hcl
+module "user" {
+  source  = "Infostrux-Solutions/user/snowflake"
+  version = "0.3.0"
+  providers = {
+    snowflake = snowflake.useradmin
+  }
+
+  depends_on = [snowflake_warehouse.warehouses]
+
+  name                 = Alice
+  login_name           = Alice
+  display_name         = Alice
+  first_name           = Alice
+  last_name            = Smith
+  comment              = "A Data Engineer at Awesome Company"
+  default_role         = "SYSADMIN"
+  default_namespace    = "database_name.schema_name"
+  default_warehouse    = snowflake_warehouse.small.name
+  disabled             = false
+  email                = alice@awesomecompany.com
+  must_change_password = true
+  functional_roles = [
+    "ACCOUNTADMIN",
+    "SYSADMIN",
+  ]
+}
+```
+
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -15,7 +49,7 @@ Terraform module which creates user resources on Snowflake.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_snowflake"></a> [snowflake](#provider\_snowflake) | 0.40.0 |
+| <a name="provider_snowflake"></a> [snowflake](#provider\_snowflake) | >=0.40.0 |
 
 ## Modules
 
@@ -66,13 +100,10 @@ No modules.
 | <a name="output_user_password"></a> [user\_password](#output\_user\_password) | User's password. |
 | <a name="output_user_rsa_public_key"></a> [user\_rsa\_public\_key](#output\_user\_rsa\_public\_key) | User's first public rsa's key. |
 | <a name="output_user_rsa_public_key_2"></a> [user\_rsa\_public\_key\_2](#output\_user\_rsa\_public\_key\_2) | User's second public key. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
 
 ## Authors
-
-Module is maintained by [Infostrux Solutions](mailto:opensource@infostrux.com)
+Module is maintained by [Infostrux Solutions](mailto:opensource@infostrux.com) with help from [these awesome contributors](https://github.com/Infostrux-Solutions/terraform-snowflake-user/graphs/contributors).
 
 ## License
-
-Apache 2 Licensed. See [LICENSE](https://github.com/terraform-aws-modules/terraform-aws-vpc/tree/master/LICENSE) for full details.
-
+Apache 2 Licensed. See [LICENSE](https://github.com/Infostrux-Solutions/terraform-snowflake-user/blob/main/LICENSE) for full details.
