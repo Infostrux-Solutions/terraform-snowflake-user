@@ -1,3 +1,3 @@
-resource "snowflake_user" "users" {
-  # Populate Me
-}
+#resource "snowflake_user" "users" {
+#  # Populate Me
+#}
