@@ -4,6 +4,8 @@ Manage Snowflake users using Terraform.
 
 This module exposes all of the available configuration for a Snowflake user and passes them to the Snowflake provider resource. You can also supply functional roles to assign to the user during creation.
 
+The resulting deployment will create Snowflake users (and optionally assign grants to them).
+
 ## Usage
 
 ```hcl
