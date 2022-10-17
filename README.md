@@ -4,6 +4,8 @@ Manage Snowflake users using a simple configuration model.
 
 This module deploys Snowflake users to an account based on a YAML configuration file. Each user is created using a randomly generated password that must be reset on first login.
 
+Since the `spec.yml` file specifies resources by name, Terraform must be informed that these resources should be created first using the `depends_on` meta argument in the module block.
+
 ## Usage
 
 ```hcl
