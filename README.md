@@ -1,40 +1,131 @@
 # Snowflake User Terraform Module
 
-Manage Snowflake users using Terraform.
+Manage Snowflake users using a simple configuration model.
 
-This module exposes all of the available configuration for a Snowflake user and passes them to the Snowflake provider resource. You can also supply functional roles to assign to the user during creation.
+This module deploys Snowflake users to an account based on a YAML configuration file. Each user is created using a randomly generated password that must be reset on first login.
 
-The resulting deployment will create Snowflake users (and optionally assign grants to them).
+Since the `spec.yml` file specifies resources by name, Terraform must be informed that these resources should be created first using the `depends_on` meta argument in the module block.
 
 ## Usage
 
 ```hcl
-module "user" {
+module "users" {
   source  = "Infostrux-Solutions/user/snowflake"
-  version = "0.3.0"
+  version = "1.0.0"
+
   providers = {
     snowflake = snowflake.useradmin
   }
 
-  depends_on = [snowflake_warehouse.warehouses]
-
-  name                 = Alice
-  login_name           = Alice
-  display_name         = Alice
-  first_name           = Alice
-  last_name            = Smith
-  comment              = "A Data Engineer at Awesome Company"
-  default_role         = "SYSADMIN"
-  default_namespace    = "database_name.schema_name"
-  default_warehouse    = snowflake_warehouse.small.name
-  disabled             = false
-  email                = alice@awesomecompany.com
-  must_change_password = true
-  functional_roles = [
-    "ACCOUNTADMIN",
-    "SYSADMIN",
+  depends_on = [
+    snowflake_database.databases,
+    snowflake_role.roles,
+    snowflake_warehouse.warehouses,
   ]
+
+  spec_file_path = "spec.yml"
 }
+
+output "users_password" {
+  description = "The randomly generated password for each Snowflake user."
+  sensitive   = true
+  value       = module.users.users_password
+}
+```
+
+Once applied, the password can be obtained by viewing the Terraform output explicitly:
+
+```shell
+terraform output -json
+```
+
+**Example Output**
+
+```shell
+{
+  "users_password": {
+    "sensitive": true,
+    "type": "string",
+    "value": "xxxxxxxxxxxxxxxx"  <-- This will be the generated password value.
+  }
+}
+```
+
+### Snowflake Role
+
+Snowflake recommends using the **USERADMIN** system role to create and manage users. Though not required, this module should be configured with a provider alias that uses **USERADMIN** to deploy the users.
+
+The following is an example of a working `providers.tf` file which specifies a user-configurable role (default) and the **USERADMIN** aliased role:
+
+```hcl
+terraform {
+  required_version = ">= 1.0.0"
+
+  required_providers {
+    snowflake = {
+      source  = "Snowflake-Labs/snowflake"
+      version = "0.46.0"
+    }
+  }
+}
+
+provider "snowflake" {
+  account                = var.snowflake_account
+  username               = var.snowflake_username
+  private_key_path       = var.snowflake_private_key_path
+  private_key_passphrase = var.snowflake_private_key_passphrase
+  role                   = var.snowflake_role
+}
+
+provider "snowflake" {
+  alias                  = "useradmin"
+  account                = var.snowflake_account
+  username               = var.snowflake_username
+  private_key_path       = var.snowflake_private_key_path
+  private_key_passphrase = var.snowflake_private_key_passphrase
+  role                   = "USERADMIN"
+}
+```
+
+Then when specifying the module, the useradmin provider alias can be used as the `snowflake` provider:
+
+```hcl
+module "users" {
+  ...
+  providers = {
+    snowflake = snowflake.useradmin
+  }
+  ...
+}
+```
+
+### Configuring Resources
+
+The YAML specification file defines users and their attributes.
+
+All of the keys defined in the configuration specification are optional, except for `name`.
+
+#### spec.yml
+
+A User specification file has the following structure:
+
+```yaml
+users:
+  user_name:
+    name: user_name
+    comment: user_comment
+    default_namespace: namespace
+    default_role: role_name
+    default_warehouse: warehouse_name
+    disabled: true/false
+    display_name: user_display_name
+    email: user_email
+    first_name: user_first_name
+    last_name: user_last_name
+    login_name: user_login_name
+    rsa_public_key: user_rsa_public_key
+    rsa_public_key_2: user_rsa_public_key_2
+  ... ... ...
 ```
 
 <!-- BEGIN_TF_DOCS -->
@@ -42,14 +133,16 @@ module "user" {
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.1 |
-| <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | >=0.40.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | >=3.4.3 |
+| <a name="requirement_snowflake"></a> [snowflake](#requirement\_snowflake) | >=0.46.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_snowflake"></a> [snowflake](#provider\_snowflake) | >=0.40.0 |
+| <a name="provider_random"></a> [random](#provider\_random) | >=3.4.3 |
+| <a name="provider_snowflake"></a> [snowflake](#provider\_snowflake) | >=0.46.0 |
 
 ## Modules
 
@@ -59,47 +152,20 @@ No modules.
 
 | Name | Type |
 |------|------|
-| [snowflake_role_grants.grants](https://registry.terraform.io/providers/Snowflake-Labs/snowflake/latest/docs/resources/role_grants) | resource |
-| [snowflake_user.user](https://registry.terraform.io/providers/Snowflake-Labs/snowflake/latest/docs/resources/user) | resource |
+| [random_password.password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
+| [snowflake_user.users](https://registry.terraform.io/providers/Snowflake-Labs/snowflake/latest/docs/resources/user) | resource |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_comment"></a> [comment](#input\_comment) | Specifies a comment for the user. | `string` | `"Created by Terraform."` | no |
-| <a name="input_default_namespace"></a> [default\_namespace](#input\_default\_namespace) | Specifies the namespace (database only or database and schema) that is active by default for the user's session upon login. | `string` | `null` | no |
-| <a name="input_default_role"></a> [default\_role](#input\_default\_role) | Specifies the role that is active by default for the user's session upon login. | `string` | `null` | no |
-| <a name="input_default_warehouse"></a> [default\_warehouse](#input\_default\_warehouse) | Specifies the virtual warehouse that is active by default for the user's session upon login. | `string` | `null` | no |
-| <a name="input_disabled"></a> [disabled](#input\_disabled) | Disabling a user prevents the user from logging into Snowflake. | `bool` | `false` | no |
-| <a name="input_display_name"></a> [display\_name](#input\_display\_name) | Name displayed for the user in the Snowflake web interface. | `string` | `null` | no |
-| <a name="input_email"></a> [email](#input\_email) | Email address for the user. | `string` | `null` | no |
-| <a name="input_first_name"></a> [first\_name](#input\_first\_name) | First name of the user. | `string` | `null` | no |
-| <a name="input_functional_roles"></a> [functional\_roles](#input\_functional\_roles) | Roles that the user will be granted access to. | `set(string)` | `[]` | no |
-| <a name="input_last_name"></a> [last\_name](#input\_last\_name) | Last name of the user. | `string` | `null` | no |
-| <a name="input_login_name"></a> [login\_name](#input\_login\_name) | The name users use to log in. If not supplied, snowflake will use name instead. | `string` | `null` | no |
-| <a name="input_must_change_password"></a> [must\_change\_password](#input\_must\_change\_password) | Specifies whether the user is forced to change their password on next login (including their first/initial login) into the system. | `bool` | `null` | no |
-| <a name="input_name"></a> [name](#input\_name) | Name of the user. Note that if you do not supply login\_name this will be used as login\_name. | `string` | n/a | yes |
-| <a name="input_password"></a> [password](#input\_password) | WARNING: this will put the password in the terraform state file. Use carefully. | `string` | `null` | no |
-| <a name="input_rsa_public_key"></a> [rsa\_public\_key](#input\_rsa\_public\_key) | (String) Specifies the user's RSA public key; used for key-pair authentication. Must be on 1 line without header and trailer. | `string` | `null` | no |
-| <a name="input_rsa_public_key_2"></a> [rsa\_public\_key\_2](#input\_rsa\_public\_key\_2) | (String) Specifies the user's second RSA public key; used to rotate the public and private keys for key-pair authentication based on an expiration schedule set by your organization. Must be on 1 line without header and trailer. | `string` | `null` | no |
+| <a name="input_spec_file_path"></a> [spec\_file\_path](#input\_spec\_file\_path) | The path to the user specification file. | `string` | n/a | yes |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_user_comment"></a> [user\_comment](#output\_user\_comment) | User's comment |
-| <a name="output_user_default_role"></a> [user\_default\_role](#output\_user\_default\_role) | User's default role. |
-| <a name="output_user_default_warehouse"></a> [user\_default\_warehouse](#output\_user\_default\_warehouse) | User's default warehouse |
-| <a name="output_user_disabled"></a> [user\_disabled](#output\_user\_disabled) | Prevent connection to Snowflake if true. |
-| <a name="output_user_display_name"></a> [user\_display\_name](#output\_user\_display\_name) | User's display name at the console. |
-| <a name="output_user_email"></a> [user\_email](#output\_user\_email) | User's email. |
-| <a name="output_user_first_name"></a> [user\_first\_name](#output\_user\_first\_name) | User's first name. |
-| <a name="output_user_last_name"></a> [user\_last\_name](#output\_user\_last\_name) | User'last name. |
-| <a name="output_user_must_change_password"></a> [user\_must\_change\_password](#output\_user\_must\_change\_password) | If true, the user will have to change it's password at the next connection. |
-| <a name="output_user_name"></a> [user\_name](#output\_user\_name) | Name of the user. |
-| <a name="output_user_password"></a> [user\_password](#output\_user\_password) | User's password. |
-| <a name="output_user_rsa_public_key"></a> [user\_rsa\_public\_key](#output\_user\_rsa\_public\_key) | User's first public rsa's key. |
-| <a name="output_user_rsa_public_key_2"></a> [user\_rsa\_public\_key\_2](#output\_user\_rsa\_public\_key\_2) | User's second public key. |
+| <a name="output_users_password"></a> [users\_password](#output\_users\_password) | The randomly generated password for each Snowflake user. |
 <!-- END_TF_DOCS -->
 
 ## Authors
